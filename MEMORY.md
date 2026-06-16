@@ -100,6 +100,8 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Deleted the redundant `role_structure.md` file from the workspace.
   - Added `nodejs-backend-patterns` and `impeccable` skill guidelines to [AGENTS.md](file:///d:/motherboard/AGENTS.md) following their availability/requests.
   - Overwrote [README.md](file:///d:/motherboard/README.md) with the motherboard project specifications, features, technology stack, repository structure, and development conventions.
+  - Created [brandkit.md](file:///d:/motherboard/docs/brandkit.md) to store the brand guidelines and visual asset creative standards.
+  - Embedded the bits&bytes brand logo at the top of [README.md](file:///d:/motherboard/README.md).
   - Staged and pushed all newly created skills directories, lock files, and documentation updates to Git.
-- **Status:** Documentation, README.md, and skills repository updated and pushed successfully.
+- **Status:** Documentation, brandkit, README.md, and skills repository updated and pushed successfully.
 

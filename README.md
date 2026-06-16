@@ -1,8 +1,13 @@
 # bnb-motherboard
 
+<p align="center">
+  <img src="https://gobitsnbytes.org/logo" alt="bits&bytes™ logo" width="120" height="120">
+</p>
+
 The internal operations platform for the **bits&bytes** network. 
 
 Motherboard acts as the central Identity & Access Management (IAM) engine, provisioning worker, and event/plugin SDK platform for coordinating all local city forks, contributor roles, and discord integrations.
+
 
 ---
 
