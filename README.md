@@ -1,182 +1,91 @@
-# Brand guidelines
+# bnb-motherboard
 
-Brand kit
+The internal operations platform for the **bits&bytes** network. 
+
+Motherboard acts as the central Identity & Access Management (IAM) engine, provisioning worker, and event/plugin SDK platform for coordinating all local city forks, contributor roles, and discord integrations.
 
 ---
 
-## Logo
+## 🚀 Key Features
 
-[](https://gobitsnbytes.org/logo)
+*   **Identity & Access Management (IAM) Core:** Discord-linked authentication using NextAuth.js. Guild roles are imported and mapped dynamically to internal operational groups.
+*   **Provisioning Engine:** An active sync worker keeping internal user roles, city forks, and entitlements synchronized with the Discord guild on-demand or scheduled.
+*   **Plugin Platform:** An extensible SDK allowing first-party and third-party plugins to declare custom database migrations, Fastify routes, UI panels, permissions, and audit logs.
+*   **Web Dashboard:** Next.js 15 App Router frontend leveraging Radix UI and Tailwind CSS for a premium dashboard experience.
+*   **Discord Bot Integration Layer:** Structured API/WebSocket interface hook for the bits&bytes Discord bot to sync identities, roles, and targeted user profiles.
 
-The brand mark is a geometric cube rendered in a bold, isometric style with stylized B letterforms on its face and a four-pointed star on top. It works across light, dark, and solid-color backgrounds.
+---
 
-### Logo variations
+## 🛠️ Technology Stack
 
-| Background | Usage |
-| --- | --- |
-| White | Primary / default lockup |
-| Black | Dark-background contexts |
-| Burgundy #97192c | Brand-colored environments |
-| Orange #fc920d | Accent / campaign usage |
+*   **Runtime:** [Bun](https://bun.sh/) (latest stable)
+*   **Monorepo Tools:** Bun Workspaces + [Turborepo](https://turbo.build/)
+*   **Backend:** [Fastify 5](https://fastify.dev/) (TypeScript)
+*   **Frontend:** [Next.js 15](https://nextjs.org/) App Router, React 19, TypeScript
+*   **Database:** PostgreSQL 16
+*   **ORM:** [Drizzle ORM](https://orm.drizzle.team/) + `drizzle-kit`
+*   **Auth (Web):** NextAuth.js v5 (Auth.js) with Discord provider
+*   **Auth (API):** Fastify session + NextAuth JWT verification
+*   **Component Library:** Radix UI primitives + Tailwind CSS
 
-Embedding the logo:
+---
 
-```markdown
-!logo
+## 📁 Repository Structure
+
+```
+bnb-motherboard/
+├── apps/
+│   ├── web/                    # Next.js 15 App Router (frontend)
+│   └── api/                    # Fastify 5 backend
+├── packages/
+│   ├── db/                     # Drizzle ORM schema, migrations, and postgres client
+│   ├── iam/                    # Principal resolution, policy engine, permissions
+│   ├── provisioning/           # Discord sync worker and role mapper
+│   ├── events/                 # Typed internal event bus & Redis pub/sub
+│   ├── plugin-sdk/             # SDK contract and lifecycle loaders
+│   └── ui/                     # Shared Radix UI + Tailwind component library
+├── plugins/                    # Core and third-party operational plugins
+├── docker/                     # App-specific Dockerfiles
+├── docker-compose.yml          # Local orchestration compose file
+├── turbo.json                  # Turborepo task pipeline configuration
+└── AGENTS.md                   # Single source of truth for agent guidelines and workflow rules
 ```
 
-```html
-<img src="https://gobitsnbytes.org/logo" alt="bits&bytes™ logo">
+---
+
+## ⚙️ Development Setup
+
+### 1. Prerequisites
+Make sure you have [Bun](https://bun.sh/) installed locally.
+
+### 2. Install Dependencies
+From the root of the workspace:
+```bash
+bun install
+```
+
+### 3. Environment Secrets
+Create a `.env` file in the root based on `.env.example`:
+```bash
+cp .env.example .env
+```
+Ensure you configure your `DATABASE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, and `DISCORD_BOT_TOKEN`.
+
+### 4. Running Locally
+Spin up local dependencies (Postgres & Redis) via Docker Compose:
+```bash
+docker compose up -d postgres redis
+```
+
+Start the Monorepo in development mode:
+```bash
+bun dev
 ```
 
 ---
 
-## Fonts & typography
+## 📜 Codebase Conventions
 
-| Role | Typeface | Notes |
-| --- | --- | --- |
-| Primary | Helvetica Now | Headings and anything that needs to feel bold and direct |
-| Secondary | Georgia Pro | Paragraphs and longer body text |
-| Accent script | Palm Club | Decorative / accent typeface |
-| Accent sans | Anton | Condensed/bold emphasis |
-
----
-
-## Color system
-
-### Burgundy
-
-The core. Serious. Doesn't beg for attention.
-
-| Swatch | Hex | Usage |  |
-| --- | --- | --- | --- |
-| Base | #97192c | Primary brand color |  |
-| 20% | #791423 | Deep shadow / dark variant |  |
-| 40% | #5b0f1a | Very dark variant |  |
-| 60% | #3c0a12 | Near-black variant |  |
-| 80% | #1e0509 | Darkest tint |  |
-
-### Neutrals
-
-So everything else doesn't look like a mess.
-
-| Swatch | Hex |
-| --- | --- |
-| Base | #120f0a |
-| 20% | #413f3b |
-| 40% | #716f6c |
-| 60% | #a09f9d |
-| 80% | #d0cfce |
-
-### Orange
-
-Chaos, but controlled. Where things pop.
-
-| Swatch | Hex |
-| --- | --- |
-| Base | #fc920d |
-| 20% | #fda83d |
-| 40% | #fdbe6e |
-| 60% | #fed39e |
-| 80% | #fee9cf |
-
-### Gradients
-
-Movement. Nothing here is static.
-
-| Swatch | Hex |
-| --- | --- |
-| Base | #c94218 |
-| 20% | #d46846 |
-| 40% | #df8e74 |
-| 60% | #e9b3a3 |
-| 80% | #f4d9d1 |
-
----
-
-## Visual elements
-
-The brand uses a library of textural and graphic shapes to add energy and motion:
-
-- Gradient blobs: soft, glowing orange-to-burgundy radial gradients; convey warmth and dynamism
-- Halftone dots: circular dot-pattern shapes; add retro print texture
-- Burst / starburst shapes: bold, spiky forms in burgundy; signal attention
-- Star shapes: irregular multi-pointed stars in black and burgundy; used as editorial accents
-
-These elements should feel spontaneous but not chaotic — pair them with generous white space and the structured typography system.
-
----
-
-# Brand standards for creatives
-
-<aside>
-🚨 This section is the mandatory reference for anyone producing anything with the bits&bytes™ name, logo, or visual identity — social posts, decks, event banners, merch, digital assets, anything. If you ship it with the brand on it, this applies to you.
-
-</aside>
-
----
-
-## The name
-
-There are two names. Use them correctly.
-
-**bits&bytes™** is the public brand name. Use this in all community-facing content, events, social, and design work. Always lowercase. The ampersand is part of the name.
-
-**GOBITSNBYTES FOUNDATION** is the registered legal entity name. Use this only in legal documents, contracts, invoices, regulatory filings, and official correspondence. All caps. Never in community-facing creative work.
-
-<aside>
-❌ Never write: "bits & bytes™", "Bits & Bytes", "bits and bytes", "B&B", "gobitsnbytes", or any other variation in public-facing creative work. The name is bits&bytes™ — exactly that.
-
-</aside>
-
----
-
-## The trademark symbol
-
-bits&bytes™ is an unregistered trademark (™) of GOBITSNBYTES FOUNDATION. The ™ symbol may be used in formal contexts — brand decks, official website headers, legal-adjacent materials. It is optional in casual community contexts like Discord, social captions, and event flyers. Never use ® — the mark is not yet registered.
-
----
-
-## The logo
-
-The logo is Foundation-owned IP. All versions — wordmark, icon, lockups — are controlled assets.
-
-### What you must not do
-
-- Do not stretch, distort, rotate, or skew the logo
-- Do not recolour it outside approved palette
-- Do not add outlines, shadows, gradients, or effects to the logo
-- Do not place the logo on a background that makes it illegible
-- Do not use old, unofficial, or self-created logo versions
-- Do not combine the logo with another organisation's branding without Board approval
-- Do not use the logo to imply partnership, endorsement, or sponsorship without written authorisation
-
-Always pull the logo from the official brand asset folder. If you're unsure which file to use, ask the CCO (Aadrika Maurya) or the Head of Brand & Media (Maryam Fatima) before publishing.
-
----
-
-## What you can and can't put the brand on
-
-You have brand permission for your Fork or role. Here's how that works in practice.
-
-### Allowed without further approval
-
-- Event graphics for bits&bytes™-sanctioned events (following visual identity guidelines)
-- Social posts about your Fork's activities, using the approved name and assets
-- Community content (Discord banners, recap posts, photos from events)
-- Educational materials produced for bits&bytes™ programmes
-
-### Requires approval from CCO / Head of Brand & Media
-
-- Merchandise (physical or digital) with the bits&bytes™ brand
-- Co-branded materials with a sponsor, partner, school, or external organisation
-- Press kits, media outreach, or anything going to journalists or publications
-- Any asset that implies the Foundation is a sponsor of, partner with, or endorses an external entity
-
-### Never allowed
-
-- Using the brand to raise funds, collect money, or solicit sponsorships without Board authorisation
-- Creating sub-brands, alternate logos, or visual systems under the bits&bytes™ name
-- Using the brand after your Fork is archived, suspended, or your role has ended
-- Producing anything that implies the Foundation, its Directors, or its Executive Officers personally endorse a product, person, service, or political position
-- Any content that violates the Code of Conduct
+*   **Package Scope:** All shared packages use the `@bnb/` scope (e.g. `@bnb/db`, `@bnb/iam`).
+*   **Commit Style:** Follow Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
+*   **Atomic Commits:** Keep commits small, isolated, and focused on a single logical change.
