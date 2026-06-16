@@ -73,6 +73,12 @@
       "skillPath": "plugins/developer-kit-core/skills/memory-md-management/SKILL.md",
       "computedHash": "1b11a00079df4ee25e3cb4abb45be296d32794a2a7612f2aaf762cbd2e2c25b0"
     },
+    "neobrutalism": {
+      "source": "bergside/awesome-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neobrutalism/SKILL.md",
+      "computedHash": "53dd3da4651bc1a9d7a2f826cdbba5ec7738cfb3407728f11929ca27a3355997"
+    },
     "nodejs-backend-patterns": {
       "source": "wshobson/agents",
       "sourceType": "github",

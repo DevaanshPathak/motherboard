@@ -11,6 +11,7 @@
 > - **`prd`**: Generate high-quality Product Requirements Documents (PRDs) for software systems and AI-powered features. Includes executive summaries, user stories, technical specifications, and risk analysis.
 > - **`ui-ux-pro-max`**: MUST use this before any UI/UX work (layouts, styling, animations, product types, guidelines).
 > - **`impeccable`**: Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface (covers UX review, visual hierarchy, cognitive load, accessibility, micro-interactions, responsive behavior, theming, design systems/tokens, etc. Not for backend-only tasks).
+> - **`neobrutalism`**: Use when designing or implementing user interfaces with the neobrutalist aesthetic, including bold borders, custom hard shadows, high-contrast layouts, and brandkit integrations.
 > - **`code-reviewer`**: MUST use this skill towards the end of every task, and always before a push. Always perform atomic commits.
 > - **`backend-patterns` & `nodejs-backend-patterns`**: MUST use for all backend work (creating Fastify/Express servers, REST/GraphQL APIs, middleware, error handling, authentication, database integration, and microservices).
 > - **`frontend-patterns`**: MUST use for all frontend/UI work.

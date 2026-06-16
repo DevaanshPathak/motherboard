@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 351 71% 34%; /* Burgundy #97192c */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 34 80% 52%; /* Orange #fc920d */
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
+    --accent: 34 80% 52%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 34 29% 6%; /* Neutral Base #120f0a */
+    --input: 34 29% 6%;
+    --ring: 351 71% 34%;
+
+    /* Neobrutalist variables */
+    --bg: #fff;
+    --bw: #fff;
+    --blank: #000;
+    --text: #000;
+    --mtext: #000;
+    --main: #97192c; /* Burgundy */
+    --main-foreground: #ffffff;
+    --secondary-background: #ffffff;
+    --border-radius: 4px;
+    --box-shadow-x: 4px;
+    --box-shadow-y: 4px;
+    --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 351 71% 34%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 34 80% 52%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 34 80% 52%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+}

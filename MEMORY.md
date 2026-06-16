@@ -103,5 +103,16 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Created [brandkit.md](file:///d:/motherboard/docs/brandkit.md) to store the brand guidelines and visual asset creative standards.
   - Embedded the bits&bytes brand logo at the top of [README.md](file:///d:/motherboard/README.md).
   - Staged and pushed all newly created skills directories, lock files, and documentation updates to Git.
-- **Status:** Documentation, brandkit, README.md, and skills repository updated and pushed successfully.
+### 2026-06-17 — Session 3: Neo-Brutalist Design System & Shadcn Components
+- **Actor:** Antigravity (Gemini 3.5 Pro)
+- **Actions:**
+  - Deleted the custom React UI components (`Button`, `Card`, `Input`, `Badge`, `Avatar`) that were manually generated in `packages/ui/src/` to align with the shadcn/ui registry.
+  - Configured `@bnb/ui` (`packages/ui`) for Shadcn CLI by creating `components.json`, `tailwind.config.js`, and `src/index.css` containing the bits&bytes HSL theme colors (Burgundy, Orange, Neutral Dark).
+  - Added path mappings (`@/*` -> `./src/*`) to `packages/ui/tsconfig.json` and created class merging helper `src/lib/utils.ts`.
+  - Successfully installed all neobrutalism UI components from the `neobrutalism.dev` registry using `pnpm dlx shadcn@latest add` CLI commands.
+  - Installed `class-variance-authority` and necessary Radix UI primitives as package dependencies for the library.
+  - Added the `neobrutalism` skill to the AI Agent guidelines in [AGENTS.md](file:///d:/motherboard/AGENTS.md).
+  - Created [design.md](file:///d:/motherboard/docs/design.md) containing the complete bits&bytes brand guidelines and Neo-Brutalist design system specifications.
+  - Updated [README.md](file:///d:/motherboard/README.md) to reference the Neo-Brutalist design specifications.
+- **Status:** Shared UI component library (`@bnb/ui`) fully initialized and populated with neobrutalism.dev components. Ready to start Phase 1/2 of database/IAM development.
 

@@ -16,7 +16,7 @@ Motherboard acts as the central Identity & Access Management (IAM) engine, provi
 *   **Identity & Access Management (IAM) Core:** Discord-linked authentication using NextAuth.js. Guild roles are imported and mapped dynamically to internal operational groups.
 *   **Provisioning Engine:** An active sync worker keeping internal user roles, city forks, and entitlements synchronized with the Discord guild on-demand or scheduled.
 *   **Plugin Platform:** An extensible SDK allowing first-party and third-party plugins to declare custom database migrations, Fastify routes, UI panels, permissions, and audit logs.
-*   **Web Dashboard:** Next.js 15 App Router frontend leveraging Radix UI and Tailwind CSS for a premium dashboard experience.
+*   **Web Dashboard:** Next.js 15 App Router frontend leveraging Radix UI, Tailwind CSS, and a custom Neo-Brutalist design system (see [design.md](file:///d:/motherboard/docs/design.md)) for a premium, high-contrast dashboard experience.
 *   **Discord Bot Integration Layer:** Structured API/WebSocket interface hook for the bits&bytes Discord bot to sync identities, roles, and targeted user profiles.
 
 ---
