@@ -8,10 +8,13 @@
 >
 > **AI Agent Skill-Specific Guidelines:**
 > - **`brainstorming`**: MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements, and design before implementation.
+> - **`prd`**: Generate high-quality Product Requirements Documents (PRDs) for software systems and AI-powered features. Includes executive summaries, user stories, technical specifications, and risk analysis.
 > - **`ui-ux-pro-max`**: MUST use this before any UI/UX work (layouts, styling, animations, product types, guidelines).
 > - **`code-reviewer`**: MUST use this skill towards the end of every task, and always before a push. Always perform atomic commits.
 > - **`backend-patterns`**: MUST use for all backend work.
 > - **`frontend-patterns`**: MUST use for all frontend/UI work.
+> - **`drizzle` & `drizzle-orm-expert`**: MUST use when building type-safe database layers with Drizzle (schema design, relational queries, migrations, indexes, joins, inferred types, db.select/db.query, and pgTable patterns).
+> - **`react-patterns` & `react-performance`**: MUST use when writing, reviewing, or refactoring React/Next.js components for styling, hooks discipline, server/client boundaries, and performance optimization.
 > - **`memory-md-management`**: Use when checking, auditing, updating, improving, or maintaining project memory files (such as `MEMORY.md`, `CLAUDE.md`, or creating one).
 > - **`deployment-patterns` & `devops-rollout-plan`**: MUST use for all DevOps, Docker, CI/CD, rollout plans, and rollback/deployment strategy work.
 > - **`security-review`**: MUST use when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing sensitive features.
