@@ -199,3 +199,15 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Added `.liquid-glass` and `.liquid-glass-strong` styles to the shared index.css stylesheet in [packages/ui](file:///d:/motherboard/packages/ui/src/index.css) and updated package exports to expose the CSS to Next.js.
   - Verified a clean and successful compilation and Turborepo build (`bun run build`) with no TypeScript or Next.js Webpack compile errors.
 - **Status:** Cinematic space-travel landing page successfully implemented, styled, verified, and compiled.
+
+### 2026-06-17 — Session 13: Low-Key Landing Page Refinements & SSO Configuration
+- **Actor:** Antigravity (Gemini 3.5 Pro)
+- **Actions:**
+  - Removed all interactive operations CTAs/buttons from the landing page, keeping it very low-key since access will be managed automatically via Single Sign-On (SSO).
+  - Configured a dedicated `next.config.js` and standard `not-found.tsx` to resolve Next.js Webpack page data collection and route-manifest resolution errors.
+  - Restored the user-preferred translucent `liquid-glass` card styling, adjusting background opacity (`rgba(255, 255, 255, 0.035)`) and backdrop-blur (`12px`) inline overrides to ensure clear visibility against the dark background.
+  - Added requested reference links to `gobitsnbytes.org` and the `gobitsnbytes/motherboard` GitHub repository inside the info card.
+  - Updated the subtitle text to precisely state: "this is an internal tool to manage all operations and work of bits&bytes™ (GOBITSNBYTES FOUNDATION)".
+  - Verified zero page scroll by keeping layout classes locked to `h-screen overflow-hidden`.
+  - Staged, committed, and pushed all changes successfully.
+- **Status:** Low-key landing page finalized, verified, built, and changes pushed to remote branch.
