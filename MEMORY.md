@@ -142,6 +142,7 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Read all 16 operational wiki files from the external directory `D:\bitsnbytes\agreements\legal-docs\notion-wiki`.
   - Consolidated legal parameters, executive rosters, authority matrix limitations, financial rules, safeguarding policies, minor contract handling, and Discord bot integration specs.
   - Created [legal_governance_rules.md](file:///d:/motherboard/docs/legal_governance_rules.md) to serve as a persistent operational reference.
-  - Staged, committed, and pushed [legal_governance_rules.md](file:///d:/motherboard/docs/legal_governance_rules.md) to Git.
-- **Status:** Consolidated legal and governance reference document completed and pushed.
+  - Added the `fastify-best-practices` skill guidelines to [AGENTS.md](file:///d:/motherboard/AGENTS.md) per user request.
+  - Staged, committed, and pushed both files to Git.
+- **Status:** Consolidated legal and governance reference document completed, skill rules updated, and all changes pushed.
 
