@@ -135,7 +135,48 @@ The following components have been installed via the Shadcn CLI from the [neobru
 
 ---
 
-## 5. QA Verification Checklist
+## 5. Brand Usage & Creative Standards
+
+This section details the rules for any external or internal creative outputs (social media, decks, merchandise, flyers) using the bits&bytes™ identity.
+
+### 5.1 Trademark & Name Usage
+* **bits&bytes™**: The community-facing brand name. It is an unregistered trademark (™) of GOBITSNBYTES FOUNDATION. Always lowercase. The ampersand is mandatory. Do not use the registered symbol (®).
+* **GOBITSNBYTES FOUNDATION**: The registered legal entity name, reserved strictly for legal documents, invoices, contracts, and official correspondences.
+* **Prohibited Variations:** Never write "bits & bytes™", "Bits & Bytes", "bits and bytes", "B&B", or "gobitsnbytes" in community-facing copy.
+
+### 5.2 Logo Safety Rules
+The bits&bytes™ logo is Foundation-owned IP and its styling must not be altered:
+* **Do not** stretch, distort, rotate, or skew the logo.
+* **Do not** recolor it outside the approved palette.
+* **Do not** add outlines, shadows, gradients, or special effects.
+* **Do not** place the logo on an illegible/low-contrast background.
+* **Do not** use legacy or self-created versions of the logo.
+* **Do not** combine the logo with another organization's branding or use it to imply endorsement/partnership without written Board authorization.
+
+### 5.3 Brand Authorization Matrix
+
+#### Allowed Without Upstream Approval
+* Event graphics for bits&bytes™-sanctioned events (following visual guidelines).
+* Social posts about your Fork's activities using approved names and assets.
+* Community content (Discord banners, photo recaps, event documentation).
+* Educational materials produced for bits&bytes™ programs.
+
+#### Requires Approval from CCO (Aadrika Maurya) or Head of Brand & Media (Maryam Fatima)
+* Merchandise (physical or digital) branded with bits&bytes™.
+* Co-branded materials with sponsors, partners, schools, or external organizations.
+* Press kits, media outreach materials, or copy sent to publications.
+* Any asset implying the Foundation is a sponsor or endorser of an external entity.
+
+#### Never Allowed
+* Using the brand to raise funds, collect money, or solicit sponsorships without Board authorization.
+* Creating sub-brands, alternate logos, or visual systems under the bits&bytes™ name.
+* Using the brand after your Fork has been archived/suspended or your role has ended.
+* Producing material implying that the Foundation, its Directors, or its Executive Officers personally endorse a product, service, person, or political position.
+* Any content violating the community Code of Conduct.
+
+---
+
+## 6. QA Verification Checklist
 
 Review the following before committing frontend changes:
 1. **Contrast:** Does all text achieve WCAG AA contrast (4.5:1)?

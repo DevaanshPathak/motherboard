@@ -213,3 +213,13 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Verified zero page scroll by keeping layout classes locked to `h-screen overflow-hidden`.
   - Staged, committed, and pushed all changes successfully.
 - **Status:** Low-key landing page finalized, verified, built, and changes pushed to remote branch.
+
+### 2026-06-17 — Session 14: Documentation De-duplication & Clean-up
+- **Actor:** Antigravity (Gemini 3.5 Flash)
+- **Actions:**
+  - Consolidated creative and brand standards from `docs/brandkit.md` into `docs/design.md` under section 5 ("Brand Usage & Creative Standards").
+  - Renamed the QA Verification Checklist in `docs/design.md` to section 6.
+  - Deleted the redundant `docs/brandkit.md` file from the workspace.
+  - Cleaned up `AGENTS.md` by stripping the duplicated technical specification sections and role configuration tables (now solely maintained in `docs/techspec.md`).
+  - Added a lean Documentation Index section inside `AGENTS.md` citing all project `.md` files and their purposes.
+- **Status:** Documentation de-duplicated, consolidated, and indexed.
