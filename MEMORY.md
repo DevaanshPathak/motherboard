@@ -235,3 +235,28 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Used `ON CONFLICT DO NOTHING` for all seeds so the seeder is safe to run on every container start.
   - Used polymorphic `principal_id` in grants (not FKs) to support both user and group grants in one table — a deliberate trade-off for query simplicity.
 - **Status:** Phase 1 complete and verified. All 13 tables live in Postgres. Ready for Phase 2 (IAM module).
+
+### 2026-06-17 — Session 13: Low-Key Landing Page Refinements & SSO Configuration
+- **Actor:** Antigravity (Gemini 3.5 Pro)
+- **Actions:**
+  - Removed all interactive operations CTAs/buttons from the landing page, keeping it very low-key.
+  - Configured a dedicated `next.config.js` and standard `not-found.tsx` to resolve Next.js Webpack page data collection and route-manifest resolution errors.
+  - Restored the user-preferred translucent `liquid-glass` card styling, adjusting background opacity (`rgba(255, 255, 255, 0.035)`) and backdrop-blur (`12px`) inline overrides to ensure clear visibility.
+  - Added requested reference links to `gobitsnbytes.org` and the `gobitsnbytes/motherboard` GitHub repository inside the info card.
+  - Updated the subtitle text to precisely state: "this is an internal tool to manage all operations and work of bits&bytes™ (GOBITSNBYTES FOUNDATION)".
+  - Updated access control copy to "Invite-based access" and scope to "Strictly Internal Tool" to clearly communicate authentication structure and scope.
+  - Optimized the background video player (`FadingVideo.tsx`) to utilize native hardware-accelerated video looping, removing complex requestAnimationFrame fade-out delays and successfully resolving the split-second black frame/flicker.
+  - Verified zero page scroll by keeping layout classes locked to `h-screen overflow-hidden`.
+  - Staged, committed, and pushed all changes successfully.
+- **Status:** Low-key landing page finalized, verified, built, and changes pushed to remote branch.
+
+### 2026-06-17 — Session 14: Documentation De-duplication & Clean-up
+- **Actor:** Antigravity (Gemini 3.5 Flash)
+- **Actions:**
+  - Consolidated creative and brand standards from `docs/brandkit.md` into `docs/design.md` under section 5 ("Brand Usage & Creative Standards").
+  - Renamed the QA Verification Checklist in `docs/design.md` to section 6.
+  - Deleted the redundant `docs/brandkit.md` file from the workspace.
+  - Cleaned up `AGENTS.md` by stripping the duplicated technical specification sections and role configuration tables (now solely maintained in `docs/techspec.md`).
+  - Added a lean Documentation Index section inside `AGENTS.md` citing all project `.md` files and their purposes.
+- **Status:** Documentation de-duplicated, consolidated, and indexed.
+
