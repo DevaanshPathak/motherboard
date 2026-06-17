@@ -55,6 +55,12 @@
       "skillPath": "skills/drizzle-orm-expert/SKILL.md",
       "computedHash": "4fb8d5fd0e18f04a5fdd41dcbac883beabdd0cf4959fbdd51f2f854c6130cfcf"
     },
+    "fastify-best-practices": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/fastify/SKILL.md",
+      "computedHash": "269924684709b8c6f50a569ef988e66031efb822ef92cba6c8dfa160e54ed4d4"
+    },
     "finance-billing-ops": {
       "source": "affaan-m/ECC",
       "sourceType": "github",
