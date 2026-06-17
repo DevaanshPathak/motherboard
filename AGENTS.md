@@ -45,3 +45,12 @@ This index serves as the directory for all workspace-wide and subsystem-specific
 * **[docs/legal_governance_rules.md](file:///d:/motherboard/docs/legal_governance_rules.md)**: Reference guide consolidating corporate entity details, board structures, local fork onboarding checklists, financial UPI/cash routing restrictions, and webhook authorization secrets.
 * **[docs/roadmap.md](file:///d:/motherboard/docs/roadmap.md)**: Five-stage project timeline mapping development goals from Stage 1 (Finance & Operations) to Stage 5 (T.B.D.).
 * **[docs/techspec.md](file:///d:/motherboard/docs/techspec.md)**: Unified technical specification for the FastAPI/Next.js stack, mapping out DB tables, API router structures, async authorization middleware, event bus, and provisioning worker specs.
+
+### Finance & Ledger Module (RazorpayX)
+
+The **Ledger + Banking system** for GOBITSNBYTES FOUNDATION is powered by [RazorpayX](https://razorpay.com/x/) and its API.
+
+* **Frontend:** `/finance` route in `apps/web` (currently shows "Coming Soon").
+* **Backend:** `/api/finance/*` router in `apps/api` (health check and info endpoints live; full ledger integration planned).
+* **Router file:** [apps/api/app/routers/finance.py](file:///d:/motherboard/apps/api/app/routers/finance.py)
+* **Page file:** [apps/web/app/finance/page.tsx](file:///d:/motherboard/apps/web/app/finance/page.tsx)
