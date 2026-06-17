@@ -64,15 +64,19 @@ export default function HeroSection() {
             this is an internal tool to manage all operations and work of bits&bytes™ (GOBITSNBYTES FOUNDATION)
           </p>
 
-          {/* SSO Info Section */}
+          {/* Info Section */}
           <div className="flex flex-col gap-2.5 w-full border-t border-white/10 pt-5 text-xs text-white/70">
+            <div className="flex justify-between items-center px-1">
+              <span className="font-heading uppercase tracking-wider text-orange font-bold">Scope</span>
+              <span className="font-body text-white">Strictly Internal Tool</span>
+            </div>
             <div className="flex justify-between items-center px-1">
               <span className="font-heading uppercase tracking-wider text-orange font-bold">Teammates</span>
               <span className="font-body text-white">~100 active members</span>
             </div>
             <div className="flex justify-between items-center px-1">
               <span className="font-heading uppercase tracking-wider text-orange font-bold">Access Control</span>
-              <span className="font-body text-white">Managed via SSO</span>
+              <span className="font-body text-white">Invite-based access</span>
             </div>
           </div>
 
