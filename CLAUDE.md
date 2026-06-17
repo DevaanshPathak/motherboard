@@ -5,6 +5,7 @@ Default to Bun for the frontend workspace and uv/Python for the backend.
 - The backend is FastAPI + SQLAlchemy/Alembic, not Fastify or Drizzle.
 - Keep the Bun workspace limited to `apps/web`, `packages/ui`, and `plugins/*`.
 - Treat `apps/api` as an independent Python project with its own `pyproject.toml` and lockfile.
+- Always refer to and adhere to [AGENTS.md](file:///d:/motherboard/AGENTS.md) for team structure, decisions, and coding standards.
 
 ## Frontend
 
@@ -21,3 +22,4 @@ Default to Bun for the frontend workspace and uv/Python for the backend.
 
 - Bun automatically loads `.env`, so do not add `dotenv` for frontend work.
 - Keep commands and docs aligned with the current FastAPI-edition tech spec.
+- Refer to [AGENTS.md](file:///d:/motherboard/AGENTS.md) as the single source of truth for repository workflows, role ownership, and team protocols.
