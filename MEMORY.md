@@ -30,6 +30,7 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - [x] Idempotent seeder (seed_data.py + seeder.py): 15 system groups, 24 permissions, 14 Discord role mappings, 12 city forks
   - [x] `main.py` lifespan: auto-migrate + auto-seed on startup
   - [x] 7 API routers: health, users, groups, forks, audit, sync, plugins
+  - [x] Finance router (`/api/finance/*`) — Ledger + Banking system powered by RazorpayX API
   - [x] Pydantic v2 schemas for all endpoints
   - [x] `DbSession` / `AppSettings` typed dependency aliases in `dependencies.py`
   - [x] CORS middleware wired in `main.py`
@@ -272,3 +273,19 @@ This file serves as a persistent, running log of all tasks performed, design dec
   - Implemented API endpoints mapping to schema operations under `apps/api/app/routers/iam.py` correctly implementing `CurrentUserDep`.
   - Authored automated tests using `pytest` + `pytest-asyncio` for IAM core functions handling Super Admin, Expirations, Global and Resource matching strategies inside `apps/api/tests/test_iam_policy.py`.
 - **Status:** Phase 2 (IAM Policy Evaluation) status: COMPLETE.
+
+### 2026-06-17 — Session 16: Finance & Ledger Module (RazorpayX)
+- **Actor:** Antigravity (Claude Opus 4.6 Thinking)
+- **Actions:**
+  - Created [apps/api/app/routers/finance.py](file:///d:/motherboard/apps/api/app/routers/finance.py) — the `/api/finance/*` router for the GOBITSNBYTES FOUNDATION Ledger + Banking system, powered by [RazorpayX](https://razorpay.com/x/) API.
+    - `GET /api/finance/health` — service health check.
+    - `GET /api/finance/info` — API metadata (name, version, description, org, contact, timestamp).
+  - Registered the finance router in [apps/api/app/main.py](file:///d:/motherboard/apps/api/app/main.py).
+  - Created [apps/web/app/finance/page.tsx](file:///d:/motherboard/apps/web/app/finance/page.tsx) — "Coming Soon" page for `/finance` route with glassmorphism card, animated entry, gradient glow, planned capabilities list (Budget Tracking, Expense Reports, Financial Reports).
+  - Updated [README.md](file:///d:/motherboard/README.md) — added Finance & Ledger bullet, full Docker commands for local and production, service URL table, and fixed `.env.example` link.
+  - Updated [AGENTS.md](file:///d:/motherboard/AGENTS.md) — added Finance & Ledger Module (RazorpayX) section to the documentation index.
+  - Updated [MEMORY.md](file:///d:/motherboard/MEMORY.md) — logged this session and updated the Phase 1 checklist with the finance router entry.
+- **Decisions Made:**
+  - The finance module will integrate with RazorpayX API for ledger operations, payouts, and banking. Only health/info endpoints are live for now; full integration is planned for a future phase.
+  - Frontend `/finance` page is a placeholder to establish the route early.
+- **Status:** Finance module scaffolded (API + frontend). Ready for RazorpayX API integration in a future session.

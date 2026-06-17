@@ -13,6 +13,7 @@ The repo is a hybrid monorepo:
 - Discord-backed identity and access management.
 - Provisioning and sync for guild roles and internal memberships.
 - Plugin loading and extension points.
+- **Finance & Ledger** — Ledger + Banking system for GOBITSNBYTES FOUNDATION powered by [RazorpayX](https://razorpay.com/x/) API. Frontend at `/finance`, backend at `/api/finance/*`.
 - A Next.js 15 dashboard backed by a FastAPI REST API.
 - Docker-based local and production deployment.
 
@@ -37,12 +38,42 @@ bnb-motherboard/
 ## Local Setup
 
 ```bash
+# 1. Install JS/TS dependencies
 bun install
+
+# 2. Copy env and fill in secrets
+copy .env.example .env
+
+# 3. Start infrastructure (Postgres + Redis)
 docker compose up -d postgres redis
+
+# 4. Start the FastAPI backend (in a separate terminal)
+cd apps/api
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+
+# 5. Start the Next.js frontend (in a separate terminal)
+bun run dev --filter=web
 ```
 
-For the backend, use `uv` inside `apps/api` once the Python scaffold is in place.
+## Docker — Full Stack
+
+```bash
+# Build and run everything (Postgres, Redis, API, Web)
+docker compose up --build -d
+
+# Production mode (no exposed DB/Redis ports)
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Web (Next.js)** | `http://localhost:3000` | Frontend dashboard |
+| **API (FastAPI)** | `http://localhost:8000` | Backend REST API |
+| **API Docs** | `http://localhost:8000/docs` | Swagger UI (auto-generated) |
+| **Postgres** | `localhost:5432` | Database (dev only) |
+| **Redis** | `localhost:6379` | Cache / event bus (dev only) |
 
 ## Environment
 
-Copy [.env.example](/home/equation/Projects/motherboard/.env.example) to `.env` and fill in the Discord OAuth, session, and API secrets.
+Copy [.env.example](.env.example) to `.env` and fill in the Discord OAuth, session, and API secrets.
