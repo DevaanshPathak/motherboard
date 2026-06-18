@@ -26,18 +26,22 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     """Application startup / shutdown lifecycle."""
     settings = get_settings()
 
-    # Run Alembic migrations programmatically
-    logger.info("Running Alembic migrations…")
-    import asyncio
-    from alembic import command
-    from alembic.config import Config as AlembicConfig
+    # Run Alembic migrations programmatically (unless testing)
+    import os
+    if not os.environ.get("TESTING"):
+        logger.info("Running Alembic migrations…")
+        import asyncio
+        from alembic import command
+        from alembic.config import Config as AlembicConfig
 
-    def _run_migrations() -> None:
-        alembic_cfg = AlembicConfig("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
+        def _run_migrations() -> None:
+            alembic_cfg = AlembicConfig("alembic.ini")
+            command.upgrade(alembic_cfg, "head")
 
-    await asyncio.to_thread(_run_migrations)
-    logger.info("Migrations complete.")
+        await asyncio.to_thread(_run_migrations)
+        logger.info("Migrations complete.")
+    else:
+        logger.info("Skipping Alembic migrations in test environment.")
 
     # Seed reference data
     async with get_sessionmaker()() as session:
