@@ -16,7 +16,7 @@ Persistent log of tasks, decisions, and workspace status. Every agent invocation
 - [x] **Phase 2: IAM Module** ✅ — Principal resolver, policy evaluator (`can`/`require_permission`/`batch_can`), audit writer, constants, schemas, router (iam.py — not yet registered in main.py), pytest suite
 - [x] **Phase 3: Event Bus** ✅ — Redis pub/sub EventBus, Typed Event Schemas, lifespan integrated
 - [ ] **Phase 4: Plugin SDK** (`apps/api/app/plugin_sdk`)
-- [ ] **Phase 5: Provisioning Worker** (`apps/api/app/provisioning`)
+- [x] **Phase 5: Provisioning Worker** (`apps/api/app/provisioning`) ✅ — Discord sync worker, client, sync logic, APScheduler periodic sync integration, sync router integration, test suite
 - [x] **Phase 6: Shared UI** (`@bnb/ui`) ✅ — 38 shadcn/neobrutalism components, barrel exports (sidebar/resizable/form excluded due to SSR)
 - [ ] **Phase 7: Web Dashboard** (`apps/web`) — shell + NextAuth v5 + landing page + `/finance` placeholder done
 - [ ] **Phase 8: Core Plugins**
