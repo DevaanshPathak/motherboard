@@ -23,8 +23,8 @@ from app.db.models import Base  # noqa: F401 — side-effect import registers al
 
 config = context.config
 
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+if config.config_file_name is not None and config.get_main_option("skip_logging_config") != "True":
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

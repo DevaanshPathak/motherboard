@@ -6,15 +6,15 @@ Persistent log of tasks, decisions, and workspace status. Every agent invocation
 
 ## 1. Project Status
 
-- **Current Phase:** Phase 3 (Event Bus `apps/api/app/events`)
-- **Next Milestone:** Plugin SDK
+- **Current Phase:** Phase 4 (Plugin SDK `apps/api/app/plugin_sdk`)
+- **Next Milestone:** Provisioning Worker
 
 ### Milestone Checklist
 
 - [x] **Phase 0: Repository Scaffolding** ✅
 - [x] **Phase 1: Database Schema** ✅ — 13 ORM tables, Alembic, idempotent seeder (15 groups, 23 permissions, 15 role mappings, 12 forks), 8 active routers, CORS, lifespan auto-migrate+seed
-- [x] **Phase 2: IAM Module** ✅ — Principal resolver, policy evaluator (`can`/`require_permission`/`batch_can`), audit writer, constants, schemas, router (iam.py — registered in main.py), pytest suite
-- [ ] **Phase 3: Event Bus** (`apps/api/app/events`)
+- [x] **Phase 2: IAM Module** ✅ — Principal resolver, policy evaluator (`can`/`require_permission`/`batch_can`), audit writer, constants, schemas, router (iam.py — not yet registered in main.py), pytest suite
+- [x] **Phase 3: Event Bus** ✅ — Redis pub/sub EventBus, Typed Event Schemas, lifespan integrated
 - [ ] **Phase 4: Plugin SDK** (`apps/api/app/plugin_sdk`)
 - [x] **Phase 5: Provisioning Worker** (`apps/api/app/provisioning`) ✅ — Discord sync worker, client, sync logic, APScheduler periodic sync integration, sync router integration, test suite
 - [x] **Phase 6: Shared UI** (`@bnb/ui`) ✅ — 38 shadcn/neobrutalism components, barrel exports (sidebar/resizable/form excluded due to SSR)
@@ -99,10 +99,9 @@ plugins/     — First- and third-party plugins (reserved, empty)
 
 **S17 — Documentation Sync:** Reviewed all .md files against actual code. Fixed: MEMORY.md workspace layout + counts, models.py phantom `sessions` table, techspec.md (title + 6 code sections), cors_security_guide.md (Fastify ref + endpoint paths), AGENTS.md (added IAM section), apps/api/README.md (expanded from 7→61 lines). Fixed "14 tables" → "13 tables" in techspec. Fixed router count "9" → "8 active + iam unregistered".
 
-### 2026-06-18
+**S18 — Event Bus:** Implemented Phase 3 Event Bus (`apps/api/app/events`). Added Typed Schemas, integrated Asyncio & Redis Pub/Sub, hooked into FastAPI lifespan via `main.py`.
 
-**S18 — Phase 5 Provisioning Worker:** Created custom errors (`errors.py`), Discord API client with pagination & rate limit backoff (`client.py`), core sync engine (`sync.py`), and APScheduler integration (`scheduler.py`) under `apps/api/app/provisioning/`. Fixed 3 bugs in existing IAM router (`iam.py`) and registered it along with the provisioning sync router in `main.py` lifespan. Added `aiosqlite` dependency for in-memory SQLite testing. Created full unit/integration test suites for Discord client and sync worker, showing 100% green test pass.
-
+**S19 — Infrastructure Unification & Bugfixes:** Fixed FastAPI/Alembic multi-threaded locking deadlock on boot. Patched Dockerfiles to include `alembic` migrations. Hardened EventBus with auto-reconnect and health checks over Docker bridge. Unified Next.js reverse proxy on port 8000 and fixed 307 trailing slash redirects from FastAPI leaking internal hostnames.
 **S19 — Database & Seeder Audit Fixes:** Switched to new branch `akshat/fixes`, performed a database/seeding audit, implemented symmetric token encryption (`EncryptedString` using Fernet) in `models.py`, refactored `seeder.py` to be dialect-independent (SQLite-compatible), added `clear_db_cache` helper to `database.py`, fixed test-suite mock configuration in `conftest.py`, and added verification tests in `test_encryption.py`.
 
 **S20 — Database, IAM & Provisioning Audit Fixes:** Completed full audits and applied fixes across Database/Seeder (Phase 1), IAM (Phase 2), and Provisioning Worker (Phase 5). Configured cache clearing and shifted test database targets to isolated files (`test_temp_router.db` and `test_temp_phase1.db`) to allow running FastAPI lifespans and fixtures against the same database. Converted models to use generic `JSON` columns compiling to `JSONB` on Postgres and `JSON` on SQLite, resolved the FastAPI dependency overrides issue for `get_db_session`, and skipped Alembic migrations in tests.

@@ -1,1 +1,16 @@
-"""Event bus integration lives here in later phases."""
+from .bus import EventBus, event_bus
+from .types import (
+    Event,
+    UserCreatedPayload,
+    GroupMemberAddedPayload,
+    DiscordSyncCompletedPayload
+)
+
+__all__ = [
+    "EventBus",
+    "event_bus",
+    "Event",
+    "UserCreatedPayload",
+    "GroupMemberAddedPayload",
+    "DiscordSyncCompletedPayload",
+]

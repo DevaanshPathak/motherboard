@@ -25,8 +25,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://bnb:${POSTGRES_PASSWORD:-changeme}@postgres:5432/motherboard
-    ports:
-      - "8000:8000"
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       - postgres
       - redis
@@ -40,7 +39,7 @@ services:
     environment:
       API_URL: http://api:8000
     ports:
-      - "3000:3000"
+      - "8000:3000"
     depends_on:
       - api
 
