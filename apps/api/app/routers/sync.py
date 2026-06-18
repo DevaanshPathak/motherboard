@@ -1,23 +1,55 @@
 """Sync router — Discord provisioning sync status and manual trigger."""
 
 import uuid
+from datetime import datetime, timezone
+import logging
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Query
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.db.models import SyncRun
-from app.dependencies import DbSession
+from app.dependencies import DbDep, CurrentUserDep
+from app.iam.policy import require_permission
 from app.schemas.sync import SyncRunOut
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/sync", tags=["sync"])
 
 
+async def background_sync_task(run_id: uuid.UUID, bot_token: str, guild_id: str):
+    """Executes the Discord sync in the background."""
+    from app.database import get_sessionmaker
+    from app.provisioning.client import DiscordClient
+    from app.provisioning.sync import run_sync
+
+    logger.info("Starting background manual sync task for run %s", run_id)
+    session_factory = get_sessionmaker()
+    discord_client = DiscordClient(bot_token)
+
+    async with session_factory() as session:
+        try:
+            await run_sync(
+                db=session,
+                discord_client=discord_client,
+                guild_id=guild_id,
+                trigger="manual",
+                existing_run_id=run_id,
+            )
+        except Exception as e:
+            logger.error("Background manual sync task failed for run %s: %s", run_id, e)
+
+
 @router.get("/runs", response_model=list[SyncRunOut])
 async def list_sync_runs(
-    db: DbSession,
-    limit: Annotated[int, ...] = 20,
+    db: DbDep,
+    current_user: CurrentUserDep,
+    limit: int = 20,
 ) -> list[SyncRun]:
+    """List recent Discord sync runs."""
+    await require_permission(db, current_user, "provisioning.sync.read")
     result = await db.execute(
         select(SyncRun).order_by(SyncRun.started_at.desc()).limit(limit)
     )
@@ -25,7 +57,13 @@ async def list_sync_runs(
 
 
 @router.get("/runs/{run_id}", response_model=SyncRunOut)
-async def get_sync_run(run_id: Annotated[uuid.UUID, ...], db: DbSession) -> SyncRun:
+async def get_sync_run(
+    run_id: uuid.UUID,
+    db: DbDep,
+    current_user: CurrentUserDep,
+) -> SyncRun:
+    """Retrieve details of a specific sync run."""
+    await require_permission(db, current_user, "provisioning.sync.read")
     run = await db.get(SyncRun, run_id)
     if not run:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sync run not found.")
@@ -33,15 +71,39 @@ async def get_sync_run(run_id: Annotated[uuid.UUID, ...], db: DbSession) -> Sync
 
 
 @router.post("/trigger", response_model=SyncRunOut, status_code=status.HTTP_202_ACCEPTED)
-async def trigger_sync(db: DbSession) -> SyncRun:
+async def trigger_sync(
+    db: DbDep,
+    current_user: CurrentUserDep,
+    background_tasks: BackgroundTasks,
+) -> SyncRun:
     """
     Enqueue a manual Discord member sync.
-    The actual sync logic runs in the provisioning background worker;
-    this endpoint creates the SyncRun record and signals the worker.
+    Runs the sync engine asynchronously in a FastAPI background task.
     """
-    run = SyncRun(trigger="manual", status="running")
+    await require_permission(db, current_user, "provisioning.sync.trigger")
+
+    settings = get_settings()
+    if not settings.discord_bot_token or not settings.discord_guild_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Discord bot settings (token or guild_id) are not configured.",
+        )
+
+    run = SyncRun(
+        trigger="manual",
+        status="running",
+        started_at=datetime.now(timezone.utc),
+        errors=[],
+    )
     db.add(run)
     await db.commit()
     await db.refresh(run)
-    # TODO: emit 'provisioning.sync.triggered' event via EventBus (Phase 3)
+
+    background_tasks.add_task(
+        background_sync_task,
+        run.id,
+        settings.discord_bot_token,
+        settings.discord_guild_id,
+    )
+
     return run
