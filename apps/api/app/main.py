@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.database import get_engine, get_sessionmaker
 from app.db.seeder import run_seeds
+from app.events import event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
     def _run_migrations() -> None:
         alembic_cfg = AlembicConfig("alembic.ini")
+        alembic_cfg.set_main_option("skip_logging_config", "True")
         command.upgrade(alembic_cfg, "head")
 
     await asyncio.to_thread(_run_migrations)
@@ -43,9 +45,11 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     async with get_sessionmaker()() as session:
         await run_seeds(session)
 
+    await event_bus.start(settings.redis_url)
     logger.info("bnb-api is ready.")
     yield
 
+    await event_bus.stop()
     # Shutdown — dispose the engine connection pool
     await get_engine().dispose()
     logger.info("bnb-api shut down cleanly.")

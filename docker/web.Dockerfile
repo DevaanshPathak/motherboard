@@ -29,4 +29,6 @@ COPY --from=builder /app/apps/web/.next ./apps/web/.next
 
 EXPOSE 3000
 
-CMD ["bun", "--cwd", "apps/web", "run", "start"]
+WORKDIR /app/apps/web
+
+CMD ["bun", "run", "start"]

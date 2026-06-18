@@ -6,15 +6,15 @@ Persistent log of tasks, decisions, and workspace status. Every agent invocation
 
 ## 1. Project Status
 
-- **Current Phase:** Phase 3 (Event Bus `apps/api/app/events`)
-- **Next Milestone:** Plugin SDK + Provisioning Worker
+- **Current Phase:** Phase 4 (Plugin SDK `apps/api/app/plugin_sdk`)
+- **Next Milestone:** Provisioning Worker
 
 ### Milestone Checklist
 
 - [x] **Phase 0: Repository Scaffolding** ✅
 - [x] **Phase 1: Database Schema** ✅ — 13 ORM tables, Alembic, idempotent seeder (15 groups, 23 permissions, 15 role mappings, 12 forks), 8 active routers, CORS, lifespan auto-migrate+seed
 - [x] **Phase 2: IAM Module** ✅ — Principal resolver, policy evaluator (`can`/`require_permission`/`batch_can`), audit writer, constants, schemas, router (iam.py — not yet registered in main.py), pytest suite
-- [ ] **Phase 3: Event Bus** (`apps/api/app/events`)
+- [x] **Phase 3: Event Bus** ✅ — Redis pub/sub EventBus, Typed Event Schemas, lifespan integrated
 - [ ] **Phase 4: Plugin SDK** (`apps/api/app/plugin_sdk`)
 - [ ] **Phase 5: Provisioning Worker** (`apps/api/app/provisioning`)
 - [x] **Phase 6: Shared UI** (`@bnb/ui`) ✅ — 38 shadcn/neobrutalism components, barrel exports (sidebar/resizable/form excluded due to SSR)
@@ -98,3 +98,7 @@ plugins/     — First- and third-party plugins (reserved, empty)
 **S16b — Finance Module:** Created routers/finance.py (`/api/finance/*` — health + info). Registered in main.py. Created `/finance` "Coming Soon" page. Updated README, AGENTS, MEMORY.
 
 **S17 — Documentation Sync:** Reviewed all .md files against actual code. Fixed: MEMORY.md workspace layout + counts, models.py phantom `sessions` table, techspec.md (title + 6 code sections), cors_security_guide.md (Fastify ref + endpoint paths), AGENTS.md (added IAM section), apps/api/README.md (expanded from 7→61 lines). Fixed "14 tables" → "13 tables" in techspec. Fixed router count "9" → "8 active + iam unregistered".
+
+**S18 — Event Bus:** Implemented Phase 3 Event Bus (`apps/api/app/events`). Added Typed Schemas, integrated Asyncio & Redis Pub/Sub, hooked into FastAPI lifespan via `main.py`.
+
+**S19 — Infrastructure Unification & Bugfixes:** Fixed FastAPI/Alembic multi-threaded locking deadlock on boot. Patched Dockerfiles to include `alembic` migrations. Hardened EventBus with auto-reconnect and health checks over Docker bridge. Unified Next.js reverse proxy on port 8000 and fixed 307 trailing slash redirects from FastAPI leaking internal hostnames.

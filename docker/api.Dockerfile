@@ -11,7 +11,8 @@ RUN pip install --no-cache-dir uv
 COPY apps/api/pyproject.toml apps/api/uv.lock ./
 COPY apps/api/README.md ./README.md
 COPY apps/api/app ./app
-
+COPY apps/api/alembic.ini ./alembic.ini
+COPY apps/api/alembic ./alembic
 RUN uv sync --frozen --no-dev --no-install-project
 
 FROM python:3.12-slim AS runner
@@ -27,7 +28,8 @@ COPY --from=builder /app/pyproject.toml /app/pyproject.toml
 COPY --from=builder /app/uv.lock /app/uv.lock
 COPY --from=builder /app/README.md /app/README.md
 COPY --from=builder /app/app /app/app
-
+COPY --from=builder /app/alembic.ini /app/alembic.ini
+COPY --from=builder /app/alembic /app/alembic
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
