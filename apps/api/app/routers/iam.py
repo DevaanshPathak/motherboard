@@ -2,7 +2,7 @@ import uuid
 from typing import List, Optional, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Response
-from sqlalchemy import select, and_, delete
+from sqlalchemy import select, and_, delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 import httpx
@@ -269,6 +269,7 @@ async def list_discord_roles(current_user: CurrentUserDep, db: DbDep) -> List[Di
         response = await client.get(
             f"https://discord.com/api/v10/guilds/{settings.discord_guild_id}/roles",
             headers={"Authorization": f"Bot {settings.discord_bot_token}"}
+        )
 
 
         if response.status_code != 200:

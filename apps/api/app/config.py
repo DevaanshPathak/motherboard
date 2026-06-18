@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     api_url: str = Field(default="http://localhost:8000", validation_alias="API_URL")
     # Comma-separated list of allowed CORS origins (overrides nextauth_url for multi-origin setups)
     cors_origins: str = Field(default="", validation_alias="CORS_ORIGINS")
+    sync_interval_minutes: int = Field(default=15, validation_alias="SYNC_INTERVAL_MINUTES")
+    enable_sync_scheduler: bool = Field(default=False, validation_alias="ENABLE_SYNC_SCHEDULER")
+
 
 
 @lru_cache(maxsize=1)
