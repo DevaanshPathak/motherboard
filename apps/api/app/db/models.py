@@ -641,3 +641,180 @@ class SyncRun(Base):
 
     def __repr__(self) -> str:
         return f"<SyncRun id={self.id} status={self.status!r}>"
+
+
+# ---------------------------------------------------------------------------
+# Finance — Virtual Accounts, Cards, Money Requests
+# ---------------------------------------------------------------------------
+
+class VirtualAccount(Base):
+    """
+    Paper virtual bank account. All balances are internal ledger values only —
+    no real money moves. One real current account sits underneath the entire system.
+    """
+
+    __tablename__ = "virtual_accounts"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Balance stored in paise (₹1 = 100 paise) to avoid float rounding
+    balance_paise: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    # Human-readable fake account identifiers
+    account_number: Mapped[str] = mapped_column(String(20), nullable=False, unique=True, index=True)
+    ifsc: Mapped[str] = mapped_column(String(11), default="GOBN0001001", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(
+        JSON, name="metadata", default=dict, nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    owner: Mapped["User"] = relationship("User", foreign_keys=[owner_id])
+    cards: Mapped[list["VirtualCard"]] = relationship(
+        "VirtualCard", back_populates="account", cascade="all, delete-orphan"
+    )
+    outgoing_requests: Mapped[list["MoneyRequest"]] = relationship(
+        "MoneyRequest", back_populates="from_account", foreign_keys="MoneyRequest.from_account_id"
+    )
+    incoming_requests: Mapped[list["MoneyRequest"]] = relationship(
+        "MoneyRequest", back_populates="to_account", foreign_keys="MoneyRequest.to_account_id"
+    )
+
+    def __repr__(self) -> str:
+        return f"<VirtualAccount id={self.id} name={self.name!r}>"
+
+
+class VirtualCard(Base):
+    """
+    A virtual card attached to a VirtualAccount. Cosmetic / tracking only —
+    no real payment rails behind it.
+    """
+
+    __tablename__ = "virtual_cards"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    account_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("virtual_accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    holder_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    card_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    # Stored last four digits only — full number never persisted
+    last_four: Mapped[str] = mapped_column(String(4), nullable=False)
+    # 'virtual' | 'debit'
+    card_type: Mapped[str] = mapped_column(String(20), default="virtual", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    expires_month: Mapped[int] = mapped_column(Integer, nullable=False)
+    expires_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    account: Mapped["VirtualAccount"] = relationship("VirtualAccount", back_populates="cards")
+    holder: Mapped["User"] = relationship("User", foreign_keys=[holder_id])
+
+    def __repr__(self) -> str:
+        return f"<VirtualCard id={self.id} last_four={self.last_four!r} type={self.card_type!r}>"
+
+
+class MoneyRequest(Base):
+    """
+    A paper money request — either from the main pool (from_account_id=None)
+    or from a specific VirtualAccount to another. Approved requests adjust
+    both account balances; no real funds move.
+    """
+
+    __tablename__ = "money_requests"
+    __table_args__ = (
+        Index("ix_money_requests_status", "status"),
+        Index("ix_money_requests_requester", "requester_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    # Null → draw from the single main pool / treasury
+    from_account_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("virtual_accounts.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    to_account_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("virtual_accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    requester_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # Amount in paise
+    amount_paise: Mapped[int] = mapped_column(Integer, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    # 'pending' | 'approved' | 'rejected'
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    reviewed_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    from_account: Mapped["VirtualAccount | None"] = relationship(
+        "VirtualAccount", back_populates="outgoing_requests", foreign_keys=[from_account_id]
+    )
+    to_account: Mapped["VirtualAccount"] = relationship(
+        "VirtualAccount", back_populates="incoming_requests", foreign_keys=[to_account_id]
+    )
+    requester: Mapped["User"] = relationship("User", foreign_keys=[requester_id])
+    reviewer: Mapped["User | None"] = relationship("User", foreign_keys=[reviewed_by])
+
+    def __repr__(self) -> str:
+        return f"<MoneyRequest id={self.id} status={self.status!r} amount={self.amount_paise}>"

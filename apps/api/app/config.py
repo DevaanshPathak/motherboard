@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     cors_origins: str = Field(default="", validation_alias="CORS_ORIGINS")
     sync_interval_minutes: int = Field(default=15, validation_alias="SYNC_INTERVAL_MINUTES")
     enable_sync_scheduler: bool = Field(default=False, validation_alias="ENABLE_SYNC_SCHEDULER")
+    # RazorpayX API key — optional until real banking integration is wired
+    razorpayx_api_key: str | None = Field(default=None, validation_alias="RAZORPAYX_API_KEY")
 
 
 

@@ -160,6 +160,17 @@ CORE_PERMISSIONS: list[dict[str, Any]] = [
     # --- Admin ---
     {"key": "admin.settings.read", "description": "View platform-wide settings."},
     {"key": "admin.settings.write", "description": "Change platform-wide settings."},
+    # --- Finance ---
+    {"key": "finance.accounts.read", "description": "View all virtual accounts and their balances."},
+    {"key": "finance.accounts.create", "description": "Create new virtual accounts and assign owners."},
+    {"key": "finance.accounts.manage", "description": "Edit, deactivate, and adjust balances on virtual accounts."},
+    {"key": "finance.cards.read", "description": "View virtual cards across all accounts."},
+    {"key": "finance.cards.create", "description": "Issue virtual cards for an account."},
+    {"key": "finance.cards.manage", "description": "Deactivate or edit any virtual card."},
+    {"key": "finance.requests.read", "description": "View all money requests."},
+    {"key": "finance.requests.create", "description": "Submit a money request from pool or another account."},
+    {"key": "finance.requests.approve", "description": "Approve or reject pending money requests."},
+    {"key": "finance.admin", "description": "Full finance admin access — supersedes all individual finance permissions."},
 ]
 
 

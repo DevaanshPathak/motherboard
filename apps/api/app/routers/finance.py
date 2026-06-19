@@ -1,14 +1,63 @@
-"""Finance router — GOBITSNBYTES FOUNDATION Finance API."""
+"""
+Finance router — GOBITSNBYTES FOUNDATION Virtual Ledger + Banking API.
 
+Powered by RazorpayX (future real integration). All money flows are on paper only —
+a single real current account sits underneath. Requires IAM-based authentication
+via the X-User-Id header and finance.* permissions.
+"""
+
+from __future__ import annotations
+
+import random
+import string
+import uuid
 from datetime import datetime, timezone
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import select
+
+from app.db.models import MoneyRequest, VirtualAccount, VirtualCard
+from app.dependencies import CurrentUserDep, DbSession
+from app.iam.policy import can, require_permission
+from app.schemas.finance import (
+    MoneyRequestCreate,
+    MoneyRequestOut,
+    MoneyRequestReview,
+    VirtualAccountCreate,
+    VirtualAccountOut,
+    VirtualAccountUpdate,
+    VirtualCardCreate,
+    VirtualCardOut,
+    VirtualCardUpdate,
+)
 
 router = APIRouter(prefix="/api/finance", tags=["finance"])
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _gen_account_number() -> str:
+    """Generate a fake 12-digit account number."""
+    return "".join(random.choices(string.digits, k=12))
+
+
+async def _require_finance(db, user, perm: str) -> None:
+    """Check finance.admin OR the specific finance permission."""
+    is_admin = await can(db, user, "finance.admin")
+    if is_admin:
+        return
+    await require_permission(db, user, perm)
+
+
+# ---------------------------------------------------------------------------
+# Health & Info
+# ---------------------------------------------------------------------------
+
 @router.get("/health")
-async def finance_health() -> dict[str, str]:
+async def finance_health() -> dict:
     return {"status": "ok", "service": "finance"}
 
 
@@ -16,14 +65,337 @@ async def finance_health() -> dict[str, str]:
 async def finance_info() -> dict:
     return {
         "name": "GOBITSNBYTES FOUNDATION Finance API",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "description": (
             "Internal finance operations module for the bits&bytes network. "
-            "Handles budgeting, expense tracking, reimbursements, and "
-            "financial reporting across all city forks."
+            "Handles virtual budgeting, expense tracking, reimbursements, and "
+            "financial reporting across all city forks. Powered by RazorpayX."
         ),
-        "status": "coming_soon",
+        "status": "active",
         "organization": "GOBITSNBYTES FOUNDATION",
+        "banking_provider": "RazorpayX",
         "contact": "finance@gobitsnbytes.org",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Virtual Accounts
+# ---------------------------------------------------------------------------
+
+@router.get("/accounts", response_model=list[VirtualAccountOut])
+async def list_accounts(
+    db: DbSession,
+    current_user: CurrentUserDep,
+    active_only: Annotated[bool, Query()] = True,
+) -> list[VirtualAccount]:
+    await _require_finance(db, current_user, "finance.accounts.read")
+    stmt = select(VirtualAccount)
+    if active_only:
+        stmt = stmt.where(VirtualAccount.is_active.is_(True))
+    stmt = stmt.order_by(VirtualAccount.created_at.desc())
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.post("/accounts", response_model=VirtualAccountOut, status_code=status.HTTP_201_CREATED)
+async def create_account(
+    payload: VirtualAccountCreate,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualAccount:
+    await _require_finance(db, current_user, "finance.accounts.create")
+
+    # Generate a unique account number
+    for _ in range(10):
+        acc_no = _gen_account_number()
+        exists = await db.execute(
+            select(VirtualAccount).where(VirtualAccount.account_number == acc_no)
+        )
+        if not exists.scalar_one_or_none():
+            break
+
+    account = VirtualAccount(
+        owner_id=payload.owner_id,
+        name=payload.name,
+        description=payload.description,
+        account_number=acc_no,
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.get("/accounts/{account_id}", response_model=VirtualAccountOut)
+async def get_account(
+    account_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualAccount:
+    await _require_finance(db, current_user, "finance.accounts.read")
+    account = await db.get(VirtualAccount, account_id)
+    if not account:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
+    return account
+
+
+@router.patch("/accounts/{account_id}", response_model=VirtualAccountOut)
+async def update_account(
+    account_id: uuid.UUID,
+    payload: VirtualAccountUpdate,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualAccount:
+    await _require_finance(db, current_user, "finance.accounts.manage")
+    account = await db.get(VirtualAccount, account_id)
+    if not account:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(account, field, value)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.delete("/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_account(
+    account_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> None:
+    await _require_finance(db, current_user, "finance.accounts.manage")
+    account = await db.get(VirtualAccount, account_id)
+    if not account:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
+    account.is_active = False
+    await db.commit()
+
+
+@router.get("/accounts/{account_id}/cards", response_model=list[VirtualCardOut])
+async def list_account_cards(
+    account_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> list[VirtualCard]:
+    await _require_finance(db, current_user, "finance.cards.read")
+    result = await db.execute(
+        select(VirtualCard).where(VirtualCard.account_id == account_id)
+    )
+    return list(result.scalars().all())
+
+
+# ---------------------------------------------------------------------------
+# Virtual Cards
+# ---------------------------------------------------------------------------
+
+@router.get("/cards", response_model=list[VirtualCardOut])
+async def list_cards(
+    db: DbSession,
+    current_user: CurrentUserDep,
+    active_only: Annotated[bool, Query()] = True,
+) -> list[VirtualCard]:
+    await _require_finance(db, current_user, "finance.cards.read")
+    stmt = select(VirtualCard)
+    if active_only:
+        stmt = stmt.where(VirtualCard.is_active.is_(True))
+    stmt = stmt.order_by(VirtualCard.created_at.desc())
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.post("/cards", response_model=VirtualCardOut, status_code=status.HTTP_201_CREATED)
+async def create_card(
+    payload: VirtualCardCreate,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualCard:
+    await _require_finance(db, current_user, "finance.cards.create")
+    account = await db.get(VirtualAccount, payload.account_id)
+    if not account or not account.is_active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found or inactive.")
+
+    last_four = "".join(random.choices(string.digits, k=4))
+    card = VirtualCard(
+        account_id=payload.account_id,
+        holder_id=payload.holder_id,
+        card_name=payload.card_name,
+        last_four=last_four,
+        card_type=payload.card_type,
+        expires_month=payload.expires_month,
+        expires_year=payload.expires_year,
+    )
+    db.add(card)
+    await db.commit()
+    await db.refresh(card)
+    return card
+
+
+@router.get("/cards/{card_id}", response_model=VirtualCardOut)
+async def get_card(
+    card_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualCard:
+    await _require_finance(db, current_user, "finance.cards.read")
+    card = await db.get(VirtualCard, card_id)
+    if not card:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Card not found.")
+    return card
+
+
+@router.patch("/cards/{card_id}", response_model=VirtualCardOut)
+async def update_card(
+    card_id: uuid.UUID,
+    payload: VirtualCardUpdate,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> VirtualCard:
+    await _require_finance(db, current_user, "finance.cards.manage")
+    card = await db.get(VirtualCard, card_id)
+    if not card:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Card not found.")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(card, field, value)
+    await db.commit()
+    await db.refresh(card)
+    return card
+
+
+@router.delete("/cards/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_card(
+    card_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> None:
+    await _require_finance(db, current_user, "finance.cards.manage")
+    card = await db.get(VirtualCard, card_id)
+    if not card:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Card not found.")
+    card.is_active = False
+    await db.commit()
+
+
+# ---------------------------------------------------------------------------
+# Money Requests
+# ---------------------------------------------------------------------------
+
+@router.get("/requests", response_model=list[MoneyRequestOut])
+async def list_requests(
+    db: DbSession,
+    current_user: CurrentUserDep,
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[MoneyRequest]:
+    await _require_finance(db, current_user, "finance.requests.read")
+    stmt = select(MoneyRequest).order_by(MoneyRequest.created_at.desc()).limit(limit).offset(offset)
+    if status_filter:
+        stmt = stmt.where(MoneyRequest.status == status_filter)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.post("/requests", response_model=MoneyRequestOut, status_code=status.HTTP_201_CREATED)
+async def create_request(
+    payload: MoneyRequestCreate,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> MoneyRequest:
+    await _require_finance(db, current_user, "finance.requests.create")
+
+    # Validate destination account
+    to_account = await db.get(VirtualAccount, payload.to_account_id)
+    if not to_account or not to_account.is_active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Destination account not found or inactive.")
+
+    # If from_account specified, validate it
+    if payload.from_account_id:
+        from_account = await db.get(VirtualAccount, payload.from_account_id)
+        if not from_account or not from_account.is_active:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Source account not found or inactive.")
+        if payload.from_account_id == payload.to_account_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Source and destination accounts must be different.")
+
+    req = MoneyRequest(
+        from_account_id=payload.from_account_id,
+        to_account_id=payload.to_account_id,
+        requester_id=current_user.user_id,
+        amount_paise=payload.amount_paise,
+        description=payload.description,
+    )
+    db.add(req)
+    await db.commit()
+    await db.refresh(req)
+    return req
+
+
+@router.get("/requests/{request_id}", response_model=MoneyRequestOut)
+async def get_request(
+    request_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> MoneyRequest:
+    await _require_finance(db, current_user, "finance.requests.read")
+    req = await db.get(MoneyRequest, request_id)
+    if not req:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found.")
+    return req
+
+
+@router.post("/requests/{request_id}/approve", response_model=MoneyRequestOut)
+async def approve_request(
+    request_id: uuid.UUID,
+    payload: MoneyRequestReview,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> MoneyRequest:
+    await _require_finance(db, current_user, "finance.requests.approve")
+    req = await db.get(MoneyRequest, request_id)
+    if not req:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found.")
+    if req.status != "pending":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Request is already {req.status}.")
+
+    # Update balances (paper only)
+    to_account = await db.get(VirtualAccount, req.to_account_id)
+    if to_account:
+        to_account.balance_paise += req.amount_paise
+
+    if req.from_account_id:
+        from_account = await db.get(VirtualAccount, req.from_account_id)
+        if from_account:
+            from_account.balance_paise -= req.amount_paise
+
+    req.status = "approved"
+    req.reviewed_by = current_user.user_id
+    req.reviewed_at = datetime.now(timezone.utc)
+    req.review_note = payload.note
+
+    await db.commit()
+    await db.refresh(req)
+    return req
+
+
+@router.post("/requests/{request_id}/reject", response_model=MoneyRequestOut)
+async def reject_request(
+    request_id: uuid.UUID,
+    payload: MoneyRequestReview,
+    db: DbSession,
+    current_user: CurrentUserDep,
+) -> MoneyRequest:
+    await _require_finance(db, current_user, "finance.requests.approve")
+    req = await db.get(MoneyRequest, request_id)
+    if not req:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found.")
+    if req.status != "pending":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Request is already {req.status}.")
+
+    req.status = "rejected"
+    req.reviewed_by = current_user.user_id
+    req.reviewed_at = datetime.now(timezone.utc)
+    req.review_note = payload.note
+
+    await db.commit()
+    await db.refresh(req)
+    return req
