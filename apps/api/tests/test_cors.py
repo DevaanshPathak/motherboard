@@ -14,7 +14,7 @@ async def test_cors_allowed_origin():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get(
-            "/health/",
+            "/health",
             headers={"Origin": allowed_origin}
         )
         assert response.status_code == 200
@@ -30,7 +30,7 @@ async def test_cors_disallowed_origin():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get(
-            "/health/",
+            "/health",
             headers={"Origin": untrusted_origin}
         )
         assert response.status_code == 200
@@ -43,7 +43,7 @@ async def test_cors_null_origin():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get(
-            "/health/",
+            "/health",
             headers={"Origin": "null"}
         )
         assert response.status_code == 200
@@ -61,7 +61,7 @@ async def test_cors_prefix_bypass_flaw():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get(
-            "/health/",
+            "/health",
             headers={"Origin": prefix_bypass}
         )
         assert response.status_code == 200
@@ -78,7 +78,7 @@ async def test_cors_suffix_bypass_flaw():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get(
-            "/health/",
+            "/health",
             headers={"Origin": suffix_bypass}
         )
         assert response.status_code == 200
@@ -94,7 +94,7 @@ async def test_cors_preflight_request():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.options(
-            "/health/",
+            "/health",
             headers={
                 "Origin": allowed_origin,
                 "Access-Control-Request-Method": "GET",

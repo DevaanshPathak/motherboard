@@ -17,6 +17,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # This must happen BEFORE accessing Base.metadata.
 from app.db.models import Base  # noqa: F401 — side-effect import registers all tables
 
+# Support JSONB compilation on SQLite for local development/migrations
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.compiler import compiles
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
 # ---------------------------------------------------------------------------
 # Alembic Config object
 # ---------------------------------------------------------------------------
