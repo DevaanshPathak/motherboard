@@ -21,7 +21,7 @@ def override_db(db_session: AsyncSession):
 async def test_health_check():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        response = await ac.get("/health/")
+        response = await ac.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
 
@@ -39,7 +39,7 @@ async def test_finance_endpoints():
         # /info
         response = await ac.get("/api/finance/info")
         assert response.status_code == 200
-        assert response.json()["status"] == "coming_soon"
+        assert response.json()["status"] == "active"
         assert "GOBITSNBYTES FOUNDATION" in response.json()["organization"]
 
 

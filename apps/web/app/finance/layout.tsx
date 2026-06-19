@@ -1,0 +1,93 @@
+import React from "react";
+import FinanceSidebar from "../../components/finance/FinanceSidebar";
+
+export const metadata = {
+  title: "Finance — bits&bytes™ Motherboard",
+  description: "GOBITSNBYTES FOUNDATION internal virtual ledger and banking portal.",
+};
+
+export default function FinanceLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        width: "100vw",
+        overflow: "hidden",
+        background: "#0a0a0a",
+        color: "#ffffff",
+      }}
+    >
+      {/* Sidebar */}
+      <FinanceSidebar />
+
+      {/* Main content area */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Top bar */}
+        <header
+          style={{
+            height: "56px",
+            borderBottom: "2px solid #1e1e1e",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 24px",
+            flexShrink: 0,
+            background: "#0d0d0d",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "#fc920d",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                border: "1.5px solid rgba(252,146,13,0.35)",
+                padding: "3px 8px",
+                borderRadius: "3px",
+                background: "rgba(252,146,13,0.08)",
+              }}
+            >
+              Finance Portal
+            </span>
+            <span
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "10px",
+                color: "#333",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              Virtual Ledger · Paper Accounts Only
+            </span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "#22c55e",
+                display: "inline-block",
+                boxShadow: "0 0 6px rgba(34,197,94,0.5)",
+              }}
+            />
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "#555", letterSpacing: "0.05em" }}>
+              GOBITSNBYTES FOUNDATION
+            </span>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main style={{ flex: 1, overflow: "auto", padding: "28px" }}>
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
