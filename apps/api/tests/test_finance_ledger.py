@@ -1,3 +1,7 @@
+"""
+Integration tests for the Virtual Finance Ledger, money requests, limits validation, and card simulation.
+"""
+
 import pytest
 import uuid
 from datetime import datetime, timezone
@@ -19,6 +23,7 @@ from app.db.models import (
 
 @pytest.fixture(autouse=True)
 def override_db(db_session: AsyncSession):
+    """Fixture to override the database session dependency with the test session."""
     async def _get_test_session():
         yield db_session
     app.dependency_overrides[get_session] = _get_test_session
@@ -28,6 +33,13 @@ def override_db(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_finance_ledger_workflow(db_session: AsyncSession):
+    """
+    Test the virtual ledger workflow, including:
+      - Creating virtual accounts.
+      - Money request approvals causing ledger postings.
+      - Generating transactions history list.
+      - Enforcing card spending limits (daily, monthly, and balance checks) in charge simulations.
+    """
     # 1. Create a test user (Finance Admin)
     admin_user = User(display_name="Finance Admin")
     db_session.add(admin_user)

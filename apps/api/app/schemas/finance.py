@@ -14,18 +14,21 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 # ---------------------------------------------------------------------------
 
 class VirtualAccountCreate(BaseModel):
+    """Schema for creating a new VirtualAccount."""
     name: str = Field(..., min_length=1, max_length=100)
     description: str | None = None
     owner_id: uuid.UUID
 
 
 class VirtualAccountUpdate(BaseModel):
+    """Schema for updating an existing VirtualAccount."""
     name: str | None = Field(None, min_length=1, max_length=100)
     description: str | None = None
     is_active: bool | None = None
 
 
 class VirtualAccountOut(BaseModel):
+    """Schema representing a VirtualAccount returned to the client."""
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -43,6 +46,7 @@ class VirtualAccountOut(BaseModel):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
+        """Validate and post-process balance_rupees conversion from paise."""
         instance = super().model_validate(obj, **kwargs)
         instance.balance_rupees = instance.balance_paise / 100
         return instance
@@ -53,6 +57,7 @@ class VirtualAccountOut(BaseModel):
 # ---------------------------------------------------------------------------
 
 class VirtualCardCreate(BaseModel):
+    """Schema for issuing a new VirtualCard."""
     account_id: uuid.UUID
     holder_id: uuid.UUID
     card_name: str = Field(..., min_length=1, max_length=100)
@@ -64,6 +69,7 @@ class VirtualCardCreate(BaseModel):
 
 
 class VirtualCardUpdate(BaseModel):
+    """Schema for updating limits and status of a VirtualCard."""
     card_name: str | None = Field(None, min_length=1, max_length=100)
     is_active: bool | None = None
     daily_limit_paise: int | None = Field(None, ge=0)
@@ -71,6 +77,7 @@ class VirtualCardUpdate(BaseModel):
 
 
 class VirtualCardOut(BaseModel):
+    """Schema representing a VirtualCard returned to the client with formatted fields."""
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -92,6 +99,7 @@ class VirtualCardOut(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def preprocess_data(cls, data: Any) -> Any:
+        """Pre-processes SQLAlchemy objects or dictionaries to format fields like expiration date and limits."""
         # If it is a SQLAlchemy object or custom class
         if not isinstance(data, dict):
             yr = str(data.expires_year)[-2:] if hasattr(data, "expires_year") else "00"
@@ -134,12 +142,12 @@ class VirtualCardOut(BaseModel):
         return data
 
 
-
 # ---------------------------------------------------------------------------
 # Money Request
 # ---------------------------------------------------------------------------
 
 class MoneyRequestCreate(BaseModel):
+    """Schema for submitting a money request."""
     # None = draw from main pool
     from_account_id: uuid.UUID | None = None
     to_account_id: uuid.UUID
@@ -148,10 +156,12 @@ class MoneyRequestCreate(BaseModel):
 
 
 class MoneyRequestReview(BaseModel):
+    """Schema for reviewing (approving/rejecting) a money request."""
     note: str | None = None
 
 
 class MoneyRequestOut(BaseModel):
+    """Schema representing a money request returned to the client."""
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -170,6 +180,7 @@ class MoneyRequestOut(BaseModel):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
+        """Validate and post-process amount_rupees conversion from paise."""
         instance = super().model_validate(obj, **kwargs)
         instance.amount_rupees = instance.amount_paise / 100
         return instance
@@ -180,6 +191,7 @@ class MoneyRequestOut(BaseModel):
 # ---------------------------------------------------------------------------
 
 class VirtualTransactionOut(BaseModel):
+    """Schema representing a ledger transaction record returned to the client."""
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -194,13 +206,14 @@ class VirtualTransactionOut(BaseModel):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
+        """Validate and post-process amount_rupees conversion from paise."""
         instance = super().model_validate(obj, **kwargs)
         instance.amount_rupees = instance.amount_paise / 100
         return instance
 
 
 class CardSimulationPayload(BaseModel):
+    """Schema for simulating a card authorization transaction."""
     amount_paise: int = Field(..., gt=0)
     merchant: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1)
-
