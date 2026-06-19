@@ -6,15 +6,17 @@ import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-interface Account { id: string; name: string; description: string | null; balance_rupees: number; account_number: string; ifsc: string; is_active: boolean; owner_id: string; created_at: string; }
+interface Account { id: string; name: string; description: string | null; balance_rupees: number; balance_paise: number; account_number: string; ifsc: string; is_active: boolean; owner_id: string; created_at: string; }
 interface Card { id: string; card_name: string; last_four: string; card_type: string; is_active: boolean; expires_year: string; holder_id: string; }
 interface MoneyReq { id: string; amount_rupees: number; status: string; description: string; created_at: string; from_account_id: string | null; }
+interface Transaction { id: string; source_account_id: string | null; destination_account_id: string | null; amount_rupees: number; amount_paise: number; reference_type: string; reference_id: string | null; description: string; created_at: string; }
 
 export default function AccountDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [account, setAccount] = useState<Account | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [requests, setRequests] = useState<MoneyReq[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   const getHeaders = () => {
@@ -29,10 +31,12 @@ export default function AccountDetailPage() {
       fetch(`${API}/api/finance/accounts/${id}`, { headers: h }).then(r => r.json()),
       fetch(`${API}/api/finance/accounts/${id}/cards`, { headers: h }).then(r => r.json()),
       fetch(`${API}/api/finance/requests`, { headers: h }).then(r => r.json()),
-    ]).then(([acc, cds, reqs]) => {
+      fetch(`${API}/api/finance/accounts/${id}/transactions`, { headers: h }).then(r => r.json()),
+    ]).then(([acc, cds, reqs, txs]) => {
       setAccount(acc);
       setCards(Array.isArray(cds) ? cds : []);
       setRequests(Array.isArray(reqs) ? reqs.filter((r: MoneyReq) => r.from_account_id === id || (reqs as MoneyReq[]).find(x => x.id === r.id)) : []);
+      setTransactions(Array.isArray(txs) ? txs : []);
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -94,6 +98,48 @@ export default function AccountDetailPage() {
                 <div style={{ fontSize: "10px", color: "#444", marginTop: "6px" }}>Exp: {c.expires_year}</div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Ledger History section */}
+      <div style={{ background: "#111", border: "2px solid #1e1e1e", borderRadius: "4px", padding: "20px", marginBottom: "20px" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "16px" }}>Ledger Transactions</div>
+        {transactions.length === 0 ? (
+          <div style={{ fontSize: "12px", color: "#333" }}>No transactions logged on the ledger for this account yet.</div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #222" }}>
+                  <th style={{ padding: "8px 12px", fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em" }}>Date</th>
+                  <th style={{ padding: "8px 12px", fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em" }}>Description</th>
+                  <th style={{ padding: "8px 12px", fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em" }}>Reference</th>
+                  <th style={{ padding: "8px 12px", fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "right" }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map(t => {
+                  const isInflow = t.destination_account_id === id;
+                  return (
+                    <tr key={t.id} style={{ borderBottom: "1px solid #1a1a1a", background: "#0d0d0d" }}>
+                      <td style={{ padding: "10px 12px", fontSize: "12px", color: "#888", fontFamily: "monospace" }}>
+                        {new Date(t.created_at).toLocaleDateString("en-IN")}
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: "12px", color: "#ccc" }}>
+                        {t.description}
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: "11px", color: "#fc920d", fontFamily: "monospace" }}>
+                        {t.reference_type}
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: "13px", fontWeight: 700, color: isInflow ? "#22c55e" : "#ef4444", textAlign: "right", fontFamily: "monospace" }}>
+                        {isInflow ? "+" : "-"}₹{t.amount_rupees.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
