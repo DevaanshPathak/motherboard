@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -89,19 +89,50 @@ class VirtualCardOut(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    @model_validator(mode="before")
     @classmethod
-    def model_validate(cls, obj, **kwargs):
-        instance = super().model_validate(obj, **kwargs)
-        yr = str(obj.expires_year)[-2:] if hasattr(obj, "expires_year") else "00"
-        mo = f"{obj.expires_month:02d}" if hasattr(obj, "expires_month") else "00"
-        instance.expires_year = f"{mo}/{yr}"
-        
-        if instance.daily_limit_paise is not None:
-            instance.daily_limit_rupees = instance.daily_limit_paise / 100
-        if instance.monthly_limit_paise is not None:
-            instance.monthly_limit_rupees = instance.monthly_limit_paise / 100
+    def preprocess_data(cls, data: Any) -> Any:
+        # If it is a SQLAlchemy object or custom class
+        if not isinstance(data, dict):
+            yr = str(data.expires_year)[-2:] if hasattr(data, "expires_year") else "00"
+            mo = f"{data.expires_month:02d}" if hasattr(data, "expires_month") else "00"
             
-        return instance
+            daily = getattr(data, "daily_limit_paise", None)
+            monthly = getattr(data, "monthly_limit_paise", None)
+            
+            return {
+                "id": getattr(data, "id", None),
+                "account_id": getattr(data, "account_id", None),
+                "holder_id": getattr(data, "holder_id", None),
+                "card_name": getattr(data, "card_name", None),
+                "last_four": getattr(data, "last_four", None),
+                "card_type": getattr(data, "card_type", None),
+                "is_active": getattr(data, "is_active", None),
+                "expires_month": getattr(data, "expires_month", None),
+                "expires_year": f"{mo}/{yr}",
+                "daily_limit_paise": daily,
+                "monthly_limit_paise": monthly,
+                "daily_limit_rupees": daily / 100 if daily is not None else None,
+                "monthly_limit_rupees": monthly / 100 if monthly is not None else None,
+                "created_at": getattr(data, "created_at", None),
+                "updated_at": getattr(data, "updated_at", None),
+            }
+        else:
+            # If it is a dict
+            yr = str(data.get("expires_year", "00"))
+            if "/" not in yr:
+                yr_suffix = yr[-2:]
+                mo = f"{data.get('expires_month', 0):02d}"
+                data["expires_year"] = f"{mo}/{yr_suffix}"
+            
+            daily = data.get("daily_limit_paise")
+            if daily is not None:
+                data["daily_limit_rupees"] = daily / 100
+            monthly = data.get("monthly_limit_paise")
+            if monthly is not None:
+                data["monthly_limit_rupees"] = monthly / 100
+        return data
+
 
 
 # ---------------------------------------------------------------------------

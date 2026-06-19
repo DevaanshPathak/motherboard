@@ -226,6 +226,8 @@ async def create_card(
         card_type=payload.card_type,
         expires_month=payload.expires_month,
         expires_year=payload.expires_year,
+        daily_limit_paise=payload.daily_limit_paise,
+        monthly_limit_paise=payload.monthly_limit_paise,
     )
     db.add(card)
     await db.commit()
