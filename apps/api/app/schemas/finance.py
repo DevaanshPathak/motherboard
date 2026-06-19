@@ -59,11 +59,15 @@ class VirtualCardCreate(BaseModel):
     card_type: Literal["virtual", "debit"] = "virtual"
     expires_month: int = Field(..., ge=1, le=12)
     expires_year: int = Field(..., ge=2024, le=2040)
+    daily_limit_paise: int | None = Field(None, ge=0)
+    monthly_limit_paise: int | None = Field(None, ge=0)
 
 
 class VirtualCardUpdate(BaseModel):
     card_name: str | None = Field(None, min_length=1, max_length=100)
     is_active: bool | None = None
+    daily_limit_paise: int | None = Field(None, ge=0)
+    monthly_limit_paise: int | None = Field(None, ge=0)
 
 
 class VirtualCardOut(BaseModel):
@@ -78,6 +82,10 @@ class VirtualCardOut(BaseModel):
     is_active: bool
     expires_month: int
     expires_year: str = ""  # formatted "MM/YY" string
+    daily_limit_paise: int | None
+    monthly_limit_paise: int | None
+    daily_limit_rupees: float | None = None
+    monthly_limit_rupees: float | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -87,6 +95,12 @@ class VirtualCardOut(BaseModel):
         yr = str(obj.expires_year)[-2:] if hasattr(obj, "expires_year") else "00"
         mo = f"{obj.expires_month:02d}" if hasattr(obj, "expires_month") else "00"
         instance.expires_year = f"{mo}/{yr}"
+        
+        if instance.daily_limit_paise is not None:
+            instance.daily_limit_rupees = instance.daily_limit_paise / 100
+        if instance.monthly_limit_paise is not None:
+            instance.monthly_limit_rupees = instance.monthly_limit_paise / 100
+            
         return instance
 
 
@@ -128,3 +142,34 @@ class MoneyRequestOut(BaseModel):
         instance = super().model_validate(obj, **kwargs)
         instance.amount_rupees = instance.amount_paise / 100
         return instance
+
+
+# ---------------------------------------------------------------------------
+# Virtual Transaction & Simulation
+# ---------------------------------------------------------------------------
+
+class VirtualTransactionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    source_account_id: uuid.UUID | None
+    destination_account_id: uuid.UUID | None
+    amount_paise: int
+    amount_rupees: float = 0.0
+    reference_type: str
+    reference_id: uuid.UUID | None
+    description: str
+    created_at: datetime
+
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        instance = super().model_validate(obj, **kwargs)
+        instance.amount_rupees = instance.amount_paise / 100
+        return instance
+
+
+class CardSimulationPayload(BaseModel):
+    amount_paise: int = Field(..., gt=0)
+    merchant: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1)
+
