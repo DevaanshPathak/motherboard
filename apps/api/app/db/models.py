@@ -695,6 +695,12 @@ class VirtualAccount(Base):
     incoming_requests: Mapped[list["MoneyRequest"]] = relationship(
         "MoneyRequest", back_populates="to_account", foreign_keys="MoneyRequest.to_account_id"
     )
+    debits: Mapped[list["VirtualTransaction"]] = relationship(
+        "VirtualTransaction", back_populates="source_account", foreign_keys="VirtualTransaction.source_account_id"
+    )
+    credits: Mapped[list["VirtualTransaction"]] = relationship(
+        "VirtualTransaction", back_populates="destination_account", foreign_keys="VirtualTransaction.destination_account_id"
+    )
 
     def __repr__(self) -> str:
         return f"<VirtualAccount id={self.id} name={self.name!r}>"
@@ -731,6 +737,9 @@ class VirtualCard(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     expires_month: Mapped[int] = mapped_column(Integer, nullable=False)
     expires_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Card limits in paise (optional)
+    daily_limit_paise: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
+    monthly_limit_paise: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -745,7 +754,7 @@ class VirtualCard(Base):
     holder: Mapped["User"] = relationship("User", foreign_keys=[holder_id])
 
     def __repr__(self) -> str:
-        return f"<VirtualCard id={self.id} last_four={self.last_four!r} type={self.card_type!r}>"
+        return f"<VirtualCard id={self.id} last_four={self.last_four!r} type={self.card_type!r} daily_limit={self.daily_limit_paise}>"
 
 
 class MoneyRequest(Base):
@@ -818,3 +827,48 @@ class MoneyRequest(Base):
 
     def __repr__(self) -> str:
         return f"<MoneyRequest id={self.id} status={self.status!r} amount={self.amount_paise}>"
+
+
+class VirtualTransaction(Base):
+    """
+    A paper money transaction tracking historical flows of money (debits and credits)
+    between accounts or from/to the treasury pool.
+    """
+
+    __tablename__ = "virtual_transactions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    source_account_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("virtual_accounts.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    destination_account_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("virtual_accounts.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    amount_paise: Mapped[int] = mapped_column(Integer, nullable=False)
+    # 'money_request' | 'card_charge' | 'manual_adjustment'
+    reference_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    reference_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    source_account: Mapped["VirtualAccount | None"] = relationship(
+        "VirtualAccount", back_populates="debits", foreign_keys=[source_account_id]
+    )
+    destination_account: Mapped["VirtualAccount | None"] = relationship(
+        "VirtualAccount", back_populates="credits", foreign_keys=[destination_account_id]
+    )
+
+    def __repr__(self) -> str:
+        return f"<VirtualTransaction id={self.id} amount={self.amount_paise} type={self.reference_type!r}>"
