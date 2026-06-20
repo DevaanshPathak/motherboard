@@ -141,3 +141,33 @@ Surfaced architectural findings regarding unauthenticated endpoints in the users
     1. Adjusted Next.js's fallback rewrite in [next.config.js](file:///home/equation/Projects/motherboard/apps/web/next.config.js) to preserve the `/api` prefix when proxying requests to the backend (`destination: .../api/:path*` instead of `.../:path*`) to properly align with FastAPI's router prefixes.
     2. Configured the `openapi_url`, `docs_url`, and `redoc_url` parameters on the `FastAPI` instance in [main.py](file:///home/equation/Projects/motherboard/apps/api/app/main.py) to be prefixed with `/api` (e.g. `/api/openapi.json`, `/api/docs`, and `/api/redoc`).
   - **Verification:** Verified `/api/docs` and `/api/openapi.json` resolve correctly with `200 OK` from Uvicorn, and ran the backend test suite successfully (76/76 green).
+
+### 2026-06-20 (Later)
+
+**S24 — Full App End-to-End Audit & Live Testing:** Ran comprehensive test/debug/check across all 10 phases, including live API endpoint testing via ASGI transport.
+
+**Bugs found & fixed:**
+1. **Missing `plugins/` directory** (referenced in Bun workspace but didn't exist) — created.
+2. **`sa.text('now()')` in initial alembic migration** — Alembic migration `3de79b987bc8` used `sa.text('now()')` for all `server_default` timestamp columns. This works on PostgreSQL but SQLite does not support `now()` as a DEFAULT expression. SQLAlchemy's ORM models use `func.now()` which correctly compiles to `CURRENT_TIMESTAMP` for SQLite, but `sa.text()` passes raw SQL verbatim.  
+   *Fix:* Replaced all 19 occurrences of `sa.text('now()')` with `sa.text('CURRENT_TIMESTAMP')` in `apps/api/alembic/versions/3de79b987bc8_initial_schema.py`. The finance migrations (`e3d851ea9d54`, `cdd5a04f9914`) already used `(CURRENT_TIMESTAMP)` and were unaffected.
+3. **`DATABASE_URL` not propagated to os.environ for Alembic** — The lifespan in `main.py` runs Alembic migrations programmatically via `AlembicConfig`. But `alembic/env.py` reads `DATABASE_URL` from `os.environ`, while pydantic-settings reads from `.env` without exporting to `os.environ`. When the `DATABASE_URL` is only set in `.env` (not as an actual env var), Alembic falls back to the hardcoded `driver://user:pass@localhost/dbname` from `alembic.ini` and crashes.  
+   *Fix:* Added `_ensure_alembic_env()` helper in `main.py` that exports critical env vars (starting with `DATABASE_URL`) from pydantic-settings to `os.environ` before running migrations.
+
+**Live endpoint testing results** (ASGI transport against SQLite):
+```
+HEALTH: 200              OPENAPI: 200 (39 paths)
+CREATE USER: 201         USERS LIST: 200
+GROUPS: 200/200          FORKS: 200 (12 seeded)
+FINANCE HEALTH: 200      FINANCE INFO: 200
+SYNC RUNS: 401/403       AUDIT LOGS: 200
+PLUGINS: 200             IAM/ME: 401/200
+IAM PERMISSIONS: 403     CORS: 200/200
+```
+
+**Docker verification:** Docker Desktop engine is available but wasn't fully ready for builds during this session. Dockerfiles (`api.Dockerfile`, `web.Dockerfile`) and compose files (`docker-compose.yml`, `docker-compose.prod.yml`) were verified at code level — correct structure, proper alembic inclusion, proper environment variable wiring.
+
+**Full verification results:**
+- Backend tests: **76/76 passing** (11.50s, no regressions)
+- Frontend build: **17 routes, 0 errors** (3.0s)
+- Live API endpoints: **18/18 responding correctly** (auth-gated endpoints return proper 401/403)
+- Source files: All phases audited, 3 bugs fixed
